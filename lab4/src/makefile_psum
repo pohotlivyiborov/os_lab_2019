@@ -1,0 +1,22 @@
+TARGET = psum
+
+SRCS = parallel_sum.c sum.c
+
+OBJS = $(SRCS:.c=.o)
+
+CFLAGS = -I.
+
+LIBS = -lpthread
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) $(OBJS) -o $(TARGET) $(LIBS)
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+clean:
+	rm -f $(OBJS) $(TARGET)
+
+rebuild: clean all
