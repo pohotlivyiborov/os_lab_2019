@@ -9,25 +9,20 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define SERV_PORT 20001
-#define BUFSIZE 1024
-#define SADDR struct sockaddr
-#define SLEN sizeof(struct sockaddr_in)
-
 int main(int argc, char **argv) {
-  int sockfd, n;
-  char sendline[BUFSIZE], recvline[BUFSIZE + 1];
-  struct sockaddr_in servaddr;
-  struct sockaddr_in cliaddr;
-
-  if (argc != 2) {
-    printf("usage: client <IPaddress of server>\n");
+  if (argc != 4) {
+    printf("usage: udpclient <IPaddress of server> <port> <buffersize>\n");
     exit(1);
   }
 
+  int sockfd, n;
+  int BUFSIZE = atoi(argv[3]);
+  char sendline[BUFSIZE], recvline[BUFSIZE + 1];
+  struct sockaddr_in servaddr;
+
   memset(&servaddr, 0, sizeof(servaddr));
   servaddr.sin_family = AF_INET;
-  servaddr.sin_port = htons(SERV_PORT);
+  servaddr.sin_port = htons(atoi(argv[2]));
 
   if (inet_pton(AF_INET, argv[1], &servaddr.sin_addr) < 0) {
     perror("inet_pton problem");
@@ -41,7 +36,7 @@ int main(int argc, char **argv) {
   write(1, "Enter string\n", 13);
 
   while ((n = read(0, sendline, BUFSIZE)) > 0) {
-    if (sendto(sockfd, sendline, n, 0, (SADDR *)&servaddr, SLEN) == -1) {
+    if (sendto(sockfd, sendline, n, 0, (struct sockaddr *)&servaddr, sizeof(servaddr)) == -1) {
       perror("sendto problem");
       exit(1);
     }

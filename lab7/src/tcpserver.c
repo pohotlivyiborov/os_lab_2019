@@ -7,15 +7,15 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#define SERV_PORT 10050
-#define BUFSIZE 100
-#define SADDR struct sockaddr
-
-int main() {
-  const size_t kSize = sizeof(struct sockaddr_in);
+int main(int argc, char *argv[]) {
+  if (argc != 3) {
+    printf("usage: tcpserver <port> <buffersize>\n");
+    exit(1);
+  }
 
   int lfd, cfd;
   int nread;
+  int BUFSIZE = atoi(argv[2]);
   char buf[BUFSIZE];
   struct sockaddr_in servaddr;
   struct sockaddr_in cliaddr;
@@ -25,12 +25,12 @@ int main() {
     exit(1);
   }
 
-  memset(&servaddr, 0, kSize);
+  memset(&servaddr, 0, sizeof(servaddr));
   servaddr.sin_family = AF_INET;
   servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-  servaddr.sin_port = htons(SERV_PORT);
+  servaddr.sin_port = htons(atoi(argv[1]));
 
-  if (bind(lfd, (SADDR *)&servaddr, kSize) < 0) {
+  if (bind(lfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) < 0) {
     perror("bind");
     exit(1);
   }
@@ -41,16 +41,16 @@ int main() {
   }
 
   while (1) {
-    unsigned int clilen = kSize;
+    unsigned int clilen = sizeof(cliaddr);
 
-    if ((cfd = accept(lfd, (SADDR *)&cliaddr, &clilen)) < 0) {
+    if ((cfd = accept(lfd, (struct sockaddr *)&cliaddr, &clilen)) < 0) {
       perror("accept");
       exit(1);
     }
     printf("connection established\n");
 
     while ((nread = read(cfd, buf, BUFSIZE)) > 0) {
-      write(1, &buf, nread);
+      write(1, buf, nread);
     }
 
     if (nread == -1) {
